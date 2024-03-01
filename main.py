@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from routes.UserRouter import userRouter
 from config.ConfigManager import ConfigManager
 
-app = FastAPI() # Initialization d'une api FastAPId
+app = FastAPI() # Initialization d'une api FastAPI
 
 app.include_router(userRouter, prefix="/user") # Création d'un groupe de route avec comme prefix "user" donc -> "http://localhost:7676/user/..."
 
