@@ -3,8 +3,6 @@ from sqlalchemy.orm import sessionmaker
 from config.ConfigManager import ConfigManager
 from models.UserModel import Base as UserBase
 
-# Test
-
 # Class pour pouvoir regrouper toute la configuration de la bdd (à ne pas toucher)
 class ConfigDatabase:
     def __init__(self, url):
