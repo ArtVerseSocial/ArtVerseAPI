@@ -3,9 +3,9 @@ from models.UserModel import User
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
 
-userRouter = APIRouter() # Création d'une classe de router pour créer un groupe de route
+UserRouter = APIRouter() # Création d'une classe de router pour créer un groupe de route
 
-@userRouter.get("/list")
+@UserRouter.get("/list")
 def get_users(db: Session = Depends(SessionLocal)):
     """
     Fonction qui permet de récupérer la liste des utilisateurs dans la table "user"
