@@ -26,9 +26,9 @@ def formatJWT(token):
     if len(parts) == 3:
         return True
 
-def authenticateToken(req, res, next):
-    authHeader = req.headers.get('authorization')
-    token = authHeader.split(' ')[1] if authHeader else None
+
+def authenticateToken(authorization):
+    token_prefix, token = authorization.split()
 
     if not token:
         return res.status(499).json({ 'error': 'Unauthorized - Missing or invalid Bearer token' })
