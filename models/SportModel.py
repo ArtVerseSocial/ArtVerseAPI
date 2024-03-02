@@ -8,3 +8,10 @@ class SportList(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+
+class SportUser(Base):
+    __tablename__ = "sport_user"
+
+    id = Column(Integer, primary_key=True)
+    sport_id = Column(Integer)
+    user_id = Column(Integer)
