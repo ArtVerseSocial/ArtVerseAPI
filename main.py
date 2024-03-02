@@ -5,7 +5,7 @@ from config.ConfigManager import ConfigManager
 app = FastAPI() # Initialization d'une api FastAPI
 
 app.include_router(userRouter, prefix="/user") # Création d'un groupe de route avec comme prefix "user" donc -> "http://localhost:7676/user/..."
-app.include_router()
+app.include_router() # Création d'un groupe de route avec comme prefix "sport" donc -> "http://localhost:7676/sport/..."
 
 # code pour pouvoir lancer l'api avec py et non uvicorn
 if __name__ == "__main__":
