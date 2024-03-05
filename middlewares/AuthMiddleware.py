@@ -1,6 +1,7 @@
 import jwt
 from config.ConfigManager import ConfigManager
 from datetime import datetime, timedelta
+from fastapi import Response, status, Request, HTTPException
 
 def tokenPayload(user):
     return {
@@ -27,32 +28,32 @@ def formatJWT(token):
         return True
 
 
-def authenticateToken(authorization):
+def authenticateToken(authorization, response: Response, request: Request):
     token_prefix, token = authorization.split()
 
     if not token:
-        return res.status(499).json({ 'error': 'Unauthorized - Missing or invalid Bearer token' })
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
     try:
         if not formatJWT(token):
-            return res.status(401).json({ 'error': 'Unauthorized - Invalid Format Bearer token' })
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
 
         user = jwt.decode(token, ConfigManager.API_KEY.ACCESS_TOKEN_SECRET, algorithms=['HS256'])
-        req.auth = req.get('auth', {})
-        req.auth['user'] = user
+        request.session.auth = request.session.get('auth', {})
+        request.session.auth['user'] = user
 
-        if req.auth['user']['username'] == 'root':
-            req.auth['isRoot'] = True
+        if request.session.auth['user']['username'] == 'root':
+            request.session.auth['isRoot'] = True
         next()
     except jwt.ExpiredSignatureError:
-        return res.status(498).json({ 'error': 'Unauthorized - Token Expired' })
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
     except Exception as e:
         print('Erreur lors de la vérification du token :', e)
-        return res.status(401).json({ 'error': 'Unauthorized - Invalid Bearer token' })
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
-async def refreshToken(res, token):
+async def refreshToken(token):
     if not formatJWT(token):
-        raise Exception({ 'error': 'Unauthorized - Invalid Format Bearer token' })
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
 
     try:
         user = jwt.decode(token, ConfigManager.API_KEY.REFRESH_TOKEN_SECRET, algorithms=['HS256'])
@@ -61,7 +62,7 @@ async def refreshToken(res, token):
         refreshedToken = await generateAccessToken(user)
         return refreshedToken
     except jwt.ExpiredSignatureError:
-        raise Exception({ 'error': 'Unauthorized - Invalid Bearer RefreshToken' })
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
 # Export des fonctions
 __all__ = ['authenticateToken', 'generateAccessToken', 'generateRefreshToken', 'refreshToken']
