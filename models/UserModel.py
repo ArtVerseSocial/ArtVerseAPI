@@ -20,12 +20,11 @@ class User(Base):
     # Définition des colonnes de la table
     id = Column(Integer, primary_key=True)  # Colonne ID, clé primaire
     uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Colonne UUID, clé primaire, générée automatiquement
-    key_token = Column(String, unique=True, default=generateToken)  # Colonne Key Token en String, unique
+    key_token = Column(String, unique=True)  # Colonne Key Token en String
     username = Column(String)  # Colonne Name en String
     email = Column(String)  # Colonne Email en String
     password = Column(String)  # Colonne Password en String
     created_at = Column(DateTime, default=datetime.utcnow)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
-
 
 class UserCreate(BaseModel):
     username: str

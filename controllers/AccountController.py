@@ -1,23 +1,29 @@
-from fastapi import APIRouter, Depends, Response, status, HTTPException
+from fastapi import APIRouter, Depends, Header, Query, Response, status, HTTPException
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from models.UserModel import User, UserCreate
+from models.UserModel import User, UserCreate, generateToken
 from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
-import base64
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken
+import base64,json
 
-def createUser(user, db: Session = Depends(SessionLocal)):
-    db.add(user)
+def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
+    user.key_token = generateToken()
+    temp_user = User(username=user.username, email=user.email, password=user.password, key_token=user.key_token)
+    
+    db.add(temp_user)
     db.commit()  # Confirmez la transaction
-    db.expire(user)
 
-    db.refresh(user)
+    user = db.query(User).filter(User.email == user.email).first()
 
-    token_user = base64.standard_b64encode(f'{user.username}:{user.key_token}'.encode('utf-8'))
+    # # Encodage de la chaîne dans un thread asyncio
+    token_user = jsonable_encoder(base64.standard_b64encode(f'{user.username}/{user.key_token}'.encode('utf-8')))
 
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created', "token": token_user})
 
-def registerController(user: UserCreate, db):
+async def registerController(user: UserCreate, db):
     new_user = User(username=user.username, email=user.email, password=user.password)
     
     # Validation des données
@@ -35,12 +41,26 @@ def registerController(user: UserCreate, db):
     if len(new_user.password) < 8:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Password too short')
 
-    return createUser(new_user, db)
-
-def loginController(response: Response):
+    return await createUser(new_user, db)
 
 
-    return
+def loginController(body: dict, db: Session = Depends(SessionLocal)):
+    if not body["token"]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
+    token = str(body["token"]) 
+    temp_token = base64.standard_b64decode(str(token))
+    temp_token_str = temp_token.decode('utf-8').split('/')
+    key_token = temp_token_str[1]
 
-def refreshTokenController():
+    user = db.query(User).filter(User.key_token == key_token).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Token')
+    
+    AccessToken = generateAccessToken(user)
+    RefreshToken = generateRefreshToken(user)
+    
+    return {"AccessToken": AccessToken, "RefreshToken": RefreshToken}
+
+def refreshTokenController(token: str = Header(None)):
+    print("")
     return

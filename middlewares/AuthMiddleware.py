@@ -2,24 +2,30 @@ import jwt
 from config.ConfigManager import ConfigManager
 from datetime import datetime, timedelta
 from fastapi import Response, status, Request, HTTPException
+import jwt
+from config.ConfigManager import ConfigManager
+from datetime import datetime, timedelta
+from fastapi import Response, status, Request, HTTPException
+import json
 
 def tokenPayload(user):
     return {
-        'id': user['id'],
-        'username': user['username'],
-        'token': user['token'],
-        'createdAt': user['createdAt'],
-        'updatedAt': user['updatedAt']
+        'id': str(user.id),  # Convert UUID to string
+        'uuid': str(user.uuid),  # Convert UUID to string
+        'email': str(user.email),
+        'username': str(user.username),
+        'key_token': str(user.key_token),
+        'created_at': str(user.created_at)
     }
 
 expiredAccessToken = timedelta(hours=1)
 expiredRefreshToken = timedelta(days=7)
 
 def generateAccessToken(user):
-    return jwt.encode(tokenPayload(user), ConfigManager.AUTH()["ACCESS_TOKEN"], algorithm='HS256', expires_in=expiredAccessToken)
+    return jwt.encode(tokenPayload(user), ConfigManager.AUTH()["ACCESS_TOKEN"], algorithm='HS256')
 
 def generateRefreshToken(user):
-    return jwt.encode(tokenPayload(user), ConfigManager.AUTH()["REFRESH_TOKEN"], algorithm='HS256', expires_in=expiredRefreshToken)
+    return jwt.encode(tokenPayload(user), ConfigManager.AUTH()["REFRESH_TOKEN"], algorithm='HS256')
 
 def formatJWT(token):
     parts = token.split('.')
