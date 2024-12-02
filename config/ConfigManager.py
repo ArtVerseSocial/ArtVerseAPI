@@ -8,10 +8,10 @@ class ConfigManager:
     AUTH_ACCESS_TOKEN: str = "lTiekFB9jmvZNmMuwuvDrAbSwp0NUPExUeB1auAO1BCiJJH3T1XtUFkzXZRJQwIO"
     AUTH_REFRESH_TOKEN: str = "GU0wEIULTwsvbb0Q0ooAtEiytDPvwPLlb4dBiDVPGDYMeF4vibMBDIks8tqafkh4"
 
-    DATABASE_HOST: str = "aws-0-eu-central-1.pooler.supabase.com" # Variable: DATABASE_HOST qui contient le nom de l'host de connexion à la base de donnée
-    DATABASE_PORT: int = 5432 # Variable DATABASE_PORT qui contient le port de l'host de connexion à la base de donnée
-    DATABASE_USER: str = "postgres.oyrbbmyjxfwzntrrqjvi" # Variable: DATABASE_USER qui contient l'identifiant de l'utilisateur de connexion à la base de donnée
-    DATABASE_PASSWORD: str = "nw_bz-q3?)ZX9N8" # Variable: DATABASE_PASSWORD qui contient le mot de passe de l'utilisateur de connexion à la base de donnée
+    DATABASE_HOST: str = "aws-0-eu-west-3.pooler.supabase.com" # Variable: DATABASE_HOST qui contient le nom de l'host de connexion à la base de donnée
+    DATABASE_PORT: int = 6543 # Variable DATABASE_PORT qui contient le port de l'host de connexion à la base de donnée
+    DATABASE_USER: str = "postgres.hlbqxrzefieilfoxpyfx" # Variable: DATABASE_USER qui contient l'identifiant de l'utilisateur de connexion à la base de donnée
+    DATABASE_PASSWORD: str = "#GF^HI92#pt00nk$SF" # Variable: DATABASE_PASSWORD qui contient le mot de passe de l'utilisateur de connexion à la base de donnée
 
     @classmethod
     def AUTH(cls):
