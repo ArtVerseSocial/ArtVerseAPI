@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from pydantic import BaseModel
-import uuid, string, secretsq
+import uuid, string
 
 # Création d'une classe de base pour les modèles SQLAlchemy
 Base = declarative_base()
@@ -18,7 +18,7 @@ class User(Base):
     __tablename__ = 'user'
 
     # Définition des colonnes de la table
-    id = Column(Integer, primary_key=True)  # Colonne ID, clé primaire
+    id = Column(Integer, primary_key=True, autoincrement=True)  # Colonne ID, clé primaire
     uuid = Column(UUID(as_uuid=True), primary_key=True, default="gen_random_uuid()")  # Colonne UUID, clé primaire, générée automatiquement
     username = Column(String)  # Colonne Name en String
     email = Column(String)  # Colonne Email en String

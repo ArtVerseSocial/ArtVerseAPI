@@ -8,3 +8,4 @@ TestRouter = APIRouter()
 @TestRouter.get("/user")
 def test_get(db: Session = Depends(SessionLocal)):
     users = db.query(User).all()
+    return users
