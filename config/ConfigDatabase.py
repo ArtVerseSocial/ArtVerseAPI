@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config.ConfigManager import ConfigManager
 from models.UserModel import Base as UserBase
-from models.SportModel import Base as SportBase
 
 # Class pour pouvoir regrouper toute la configuration de la bdd (à ne pas toucher)
 class ConfigDatabase:

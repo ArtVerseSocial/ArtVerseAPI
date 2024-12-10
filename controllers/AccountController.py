@@ -47,7 +47,7 @@ async def registerController(user: UserCreate, db):
 def loginController(body: dict, db: Session = Depends(SessionLocal)):
     if not body["token"]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
-    token = str(body["token"]) 
+    token = str(body["token"])
     temp_token = base64.standard_b64decode(str(token))
     temp_token_str = temp_token.decode('utf-8').split('/')
     key_token = temp_token_str[1]
