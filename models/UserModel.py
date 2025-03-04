@@ -1,21 +1,16 @@
 """
 
 """
-
-
 from sqlalchemy import Column, Integer, String, DateTime, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from pydantic import BaseModel
 import uuid, string, secrets
+from pytz import timezone
 
 # Création d'une classe de base pour les modèles SQLAlchemy
 Base = declarative_base()
-
-def generateToken():
-    alphabet = string.ascii_letters + string.digits
-    return ''.join(secrets.choice(alphabet) for _ in range(128))
 
 # Définition de la classe User, représentant une table dans la base de données
 class User(Base):
@@ -27,7 +22,21 @@ class User(Base):
     username = Column(String, nullable=False)  # Colonne Name en String
     email = Column(String, nullable=False)  # Colonne Email en String
     password = Column(String, nullable=False)  # Colonne Password en String
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Cqolonne Created At, avec valeur par défaut définie à l'heure actuelle
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
+    
+    @staticmethod
+    def get_current_time(arg1, arg2, target):
+        paris_tz = timezone('Europe/Paris')
+        return datetime.now(paris_tz)  # Fonction pour générer une date avec le fuseau horaire de Paris
+    
+    # Fonction pour générer un token
+    @staticmethod
+    def generateToken(arg1, arg2, target):
+        alphabet = string.ascii_letters + string.digits
+        target.token = ''.join(secrets.choice(alphabet) for _ in range(128))
+
+event.listen(User, 'before_insert', User.generateToken) # Ajoute d'un event listener pour générer un token avant l'insertion d'un nouvel utilisateur
+event.listen(User, 'before_insert', User.get_current_time) # Ajoute d'un event listener pour générer une date avant l'insertion d'un nouvel utilisateur
 
 class UserCreate(BaseModel):
     username: str

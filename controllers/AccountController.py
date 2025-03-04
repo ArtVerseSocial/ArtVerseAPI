@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Header, Query, Response, status, HTTPException
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from models.UserModel import User, UserCreate, generateToken
+from models.UserModel import User, UserCreate
 from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
 from fastapi.encoders import jsonable_encoder
@@ -10,18 +10,14 @@ from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken
 import base64,json
 
 def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
-    user.key_token = generateToken()
-    temp_user = User(username=user.username, email=user.email, password=user.password, key_token=user.key_token)
+    temp_user = User(username=user.username, email=user.email, password=user.password)
     
     db.add(temp_user)
-    db.commit()  # Confirmez la transaction
+    db.commit()  # Confirme l'ajout d'un nouvel utilisateur dans la base de données
 
     user = db.query(User).filter(User.email == user.email).first()
 
-    # # Encodage de la chaîne dans un thread asyncio
-    token_user = jsonable_encoder(base64.standard_b64encode(f'{user.username}/{user.key_token}'.encode('utf-8')))
-
-    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created', "token": token_user})
+    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created', 'token': user.token})
 
 async def registerController(user: UserCreate, db):
     new_user = User(username=user.username, email=user.email, password=user.password)
@@ -43,6 +39,17 @@ async def registerController(user: UserCreate, db):
 
     return await createUser(new_user, db)
 
+def deleteController(token: str = Header(None), db: Session = Depends(SessionLocal)):
+    if not token:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
+
+    user = db.query(User).filter(User.token == token).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Token')
+    
+    db.delete(user)
+    db.commit()
+    return {"status": "User deleted"}
 
 def loginController(body: dict, db: Session = Depends(SessionLocal)):
     if not body["token"]:
@@ -61,6 +68,6 @@ def loginController(body: dict, db: Session = Depends(SessionLocal)):
     
     return {"AccessToken": AccessToken, "RefreshToken": RefreshToken}
 
-def refreshTokenController(token: str = Header(None)):
+def refreshController(token: str = Header(None)):
     print("")
     return

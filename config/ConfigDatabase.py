@@ -3,6 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from config.ConfigManager import ConfigManager
 from models.UserModel import Base as UserBase
 
+Config = ConfigManager.DATABASE() # Récupération des variables de la base de donnée
+
 # Class pour pouvoir regrouper toute la configuration de la bdd (à ne pas toucher)
 class ConfigDatabase:
     def __init__(self, url):
@@ -19,6 +21,6 @@ class ConfigDatabase:
 
 # Utilisation de la classe ConfigDatabase pour créer la base de données et la session
 config_db = ConfigDatabase(
-    f'postgresql://{ConfigManager.DATABASE()["USER"]}:{ConfigManager.DATABASE()["PASSWORD"]}@{ConfigManager.DATABASE()["HOST"]}:{ConfigManager.DATABASE()["PORT"]}/postgres')
+    f'{Config["PROTOCOL"]}://{Config["USER"]}:{Config["PASSWORD"]}@{Config["HOST"]}:{Config["PORT"]}/{Config["NAME"]}')
 
 SessionLocal = config_db.get_session # Initialization des variables externes

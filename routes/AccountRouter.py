@@ -1,5 +1,5 @@
 """
-Info : Fait un group avec le prefix "/auth" example -> "/auth/register"
+Info : Fait un group avec le prefix "/auth" pour les routes de l'authentification
 
 
 """
@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Header, Query, Response, status
 from models.UserModel import UserCreate
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from controllers.AccountController import loginController, registerController, refreshTokenController
+from controllers.AccountController import loginController, registerController, refreshController, deleteController
 from fastapi import Query
 
 AccountRouter = APIRouter() # Création d'une classe de router pour créer un groupe de routes
@@ -16,10 +16,14 @@ AccountRouter = APIRouter() # Création d'une classe de router pour créer un gr
 async def register(user: UserCreate, db: Session = Depends(SessionLocal)):
     return await registerController(user, db)
 
+@AccountRouter.delete("/delete")
+def delete(token: str = Header(None), db: Session = Depends(SessionLocal)):
+    return deleteController(token, db)
+
 @AccountRouter.post("/login")
 def login(body: dict, db: Session = Depends(SessionLocal)):
     return loginController(body, db)
 
-@AccountRouter.post("/refreshToken")
-def refreshToken(token: str = Header(None)):
-    return refreshTokenController(token)
+@AccountRouter.post("/refresh")
+def refresh(token: str = Header(None)):
+    return refreshController(token)
