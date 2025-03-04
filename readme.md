@@ -30,6 +30,20 @@ Start Application : ``$ (.venv) > py main.py``
 
 ## Usage
 
+#### Swagger Docs:
+
+/auth/login
+
+/auth/refresh?refreshToken=&
+
+/auth/new?username=
+
+/art/post?&id_art=&img=buffer&content=
+
+/art/delete?id_art=
+
+/art/edit?&id_art=&(replace)
+
 ## Contributing
 
 ## License
