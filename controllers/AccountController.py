@@ -19,6 +19,7 @@ def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
 
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created'})
 
+
 async def registerController(user: UserCreate, db):
     new_user = User(username=user.username, email=user.email, password=user.password)
     
