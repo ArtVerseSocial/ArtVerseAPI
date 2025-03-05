@@ -17,7 +17,7 @@ def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
 
     user = db.query(User).filter(User.email == user.email).first()
 
-    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created', 'token': user.token})
+    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created'})
 
 async def registerController(user: UserCreate, db):
     new_user = User(username=user.username, email=user.email, password=user.password)

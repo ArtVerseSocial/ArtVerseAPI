@@ -35,7 +35,6 @@ class User(Base):
         alphabet = string.ascii_letters + string.digits
         target.token = ''.join(secrets.choice(alphabet) for _ in range(128))
 
-event.listen(User, 'before_insert', User.generateToken) # Ajoute d'un event listener pour générer un token avant l'insertion d'un nouvel utilisateur
 event.listen(User, 'before_insert', User.get_current_time) # Ajoute d'un event listener pour générer une date avant l'insertion d'un nouvel utilisateur
 
 class UserCreate(BaseModel):
