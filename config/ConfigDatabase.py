@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config.ConfigManager import ConfigManager
 from models.UserModel import Base as UserBase
+from models.PostModel import Base as PostBase
 
 Config = ConfigManager.DATABASE() # Récupération des variables de la base de donnée
 
@@ -12,6 +13,7 @@ class ConfigDatabase:
             self.engine = create_engine(url, echo=True) # Connexion à la base de donnée
             print("Success")
             UserBase.metadata.create_all(bind=self.engine) # Si table non créé, alors la créer
+            PostBase.metadata.create_all(bind=self.engine) # Si table non créé, alors la créer
             self.Session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine) # Création d'une session pour pouvoir manipuler la base de donnée
         except Exception as e:
             print(e)

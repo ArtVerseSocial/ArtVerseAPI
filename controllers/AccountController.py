@@ -71,6 +71,6 @@ def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
     return {"AccessToken": generateAccessToken
     (userDB), "RefreshToken": generateRefreshToken(userDB)}
 
-def refreshController(accessToken: str = Header(None)):
+def refreshController(refreshToken: str = Header(None)):
     
     return
