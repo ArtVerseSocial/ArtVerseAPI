@@ -17,9 +17,13 @@ Clone ``git clone https://github.com/SportInsightHub/SportInsight.git``
 
 Go to the project directory : ``$ cd SportInsight``
 
+Install python3.11 and other dependencies: ``apt install -y python3.11-venv python3.11-dev libpq-dev gcc``
+
 Install Virtualenv : ``$ pip install virtualenv``
 
 Create a virtual environment : ``$ virtualenv -p python3.11 .venv ``
+
+On Linux you need to install python3.11 before create the virtual env
 
 Activate the virtual environment (on windows): ``$ .\.venv\Scripts\activate``
 Activate the virtual environment (on linux or macOS): ``$ source .venv/bin/activate``

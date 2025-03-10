@@ -30,14 +30,18 @@ class User(Base):
         return datetime.now(paris_tz)  # Fonction pour générer une date avec le fuseau horaire de Paris
     
     # Fonction pour générer un token
-    @staticmethod
-    def generateToken(arg1, arg2, target):
-        alphabet = string.ascii_letters + string.digits
-        target.token = ''.join(secrets.choice(alphabet) for _ in range(128))
+    # @staticmethod
+    # def generateToken(arg1, arg2, target):
+    #     alphabet = string.ascii_letters + string.digits
+    #     target.token = ''.join(secrets.choice(alphabet) for _ in range(128))
 
 event.listen(User, 'before_insert', User.get_current_time) # Ajoute d'un event listener pour générer une date avant l'insertion d'un nouvel utilisateur
 
 class UserCreate(BaseModel):
     username: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
     email: str
     password: str

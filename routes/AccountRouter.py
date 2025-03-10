@@ -4,7 +4,7 @@ Info : Fait un group avec le prefix "/auth" pour les routes de l'authentificatio
 
 """
 from fastapi import APIRouter, Depends, Header, Query, Response, status
-from models.UserModel import UserCreate
+from models.UserModel import UserCreate, UserLogin
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
 from controllers.AccountController import loginController, registerController, refreshController, deleteController
@@ -21,9 +21,9 @@ def delete(token: str = Header(None), db: Session = Depends(SessionLocal)):
     return deleteController(token, db)
 
 @AccountRouter.post("/login")
-def login(body: dict, db: Session = Depends(SessionLocal)):
-    return loginController(body, db)
+def login(user: UserLogin, db: Session = Depends(SessionLocal)):
+    return loginController(user, db)
 
 @AccountRouter.post("/refresh")
-def refresh(token: str = Header(None)):
-    return refreshController(token)
+def refresh(accessToken: str = Header(None)):
+    return refreshController(accessToken)

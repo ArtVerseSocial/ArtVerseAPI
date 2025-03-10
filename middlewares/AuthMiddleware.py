@@ -1,21 +1,14 @@
 import jwt
 from config.ConfigManager import ConfigManager
+from models.UserModel import User
 from datetime import datetime, timedelta
 from fastapi import Response, status, Request, HTTPException
-import jwt
-from config.ConfigManager import ConfigManager
-from datetime import datetime, timedelta
-from fastapi import Response, status, Request, HTTPException
-import json
 
-def tokenPayload(user):
+def tokenPayload(user: User):
     return {
-        'id': str(user.id),  # Convert UUID to string
-        'uuid': str(user.uuid),  # Convert UUID to string
-        'email': str(user.email),
-        'username': str(user.username),
-        'key_token': str(user.key_token),
-        'created_at': str(user.created_at)
+        "uuid": str(user.uuid),
+        "username": user.username,
+        "email": user.email,
     }
 
 expiredAccessToken = timedelta(hours=1)

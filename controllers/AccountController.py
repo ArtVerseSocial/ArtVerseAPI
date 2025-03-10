@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, Header, Query, Response, status, HTTPException
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from models.UserModel import User, UserCreate
+from models.UserModel import User, UserCreate, UserLogin
 from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken
 import base64,json
+from passlib.context import CryptContext
 
 def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
     temp_user = User(username=user.username, email=user.email, password=user.password)
@@ -19,9 +20,11 @@ def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
 
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail={"status": 'User created'})
 
-
 async def registerController(user: UserCreate, db):
-    new_user = User(username=user.username, email=user.email, password=user.password)
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    hashed_password = pwd_context.hash(user.password)
+    new_user = User(username=user.username, email=user.email, password=hashed_password)
     
     # Validation des données
     if not new_user.username or not new_user.email or not new_user.password:
@@ -52,23 +55,22 @@ def deleteController(token: str = Header(None), db: Session = Depends(SessionLoc
     db.commit()
     return {"status": "User deleted"}
 
-def loginController(body: dict, db: Session = Depends(SessionLocal)):
-    if not body["token"]:
+def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
+    print(user)
+    if not user.email or not user.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
-    token = str(body["token"])
-    temp_token = base64.standard_b64decode(str(token))
-    temp_token_str = temp_token.decode('utf-8').split('/')
-    key_token = temp_token_str[1]
-
-    user = db.query(User).filter(User.key_token == key_token).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Token')
     
-    AccessToken = generateAccessToken(user)
-    RefreshToken = generateRefreshToken(user)
+    userDB = db.query(User).filter(User.email == user.email).first()
+    if not userDB:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Email')
     
-    return {"AccessToken": AccessToken, "RefreshToken": RefreshToken}
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    if not pwd_context.verify(user.password, userDB.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Password')
 
-def refreshController(token: str = Header(None)):
-    print("")
+    return {"AccessToken": generateAccessToken
+    (userDB), "RefreshToken": generateRefreshToken(userDB)}
+
+def refreshController(accessToken: str = Header(None)):
+    
     return
