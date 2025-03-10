@@ -3,7 +3,6 @@ Création du model Post, représentant une table dans la base de données ici in
 """
 from sqlalchemy import Column, Integer, String, DateTime, event
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.dialects.postgresql import id
 from datetime import datetime
 from pydantic import BaseModel
 import uuid, string, secrets

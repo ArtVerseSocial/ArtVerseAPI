@@ -25,5 +25,5 @@ def login(user: UserLogin, db: Session = Depends(SessionLocal)):
     return loginController(user, db)
 
 @AccountRouter.post("/refresh")
-def refresh(refreshToken: str = Header(None)):
+def refresh(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
     return refreshController(refreshToken)

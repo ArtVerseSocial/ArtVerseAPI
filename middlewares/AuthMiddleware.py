@@ -58,8 +58,9 @@ async def refreshToken(token):
         user = jwt.decode(token, ConfigManager.API_KEY.REFRESH_TOKEN_SECRET, algorithms=['HS256'])
         del user['iat']
         del user['exp']
-        refreshedToken = await generateAccessToken(user)
-        return refreshedToken
+        refreshedToken = generateRefreshToken(user)
+        accessToken = generateAccessToken(user)
+        return {accessToken, refreshedToken}
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 

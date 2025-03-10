@@ -6,9 +6,10 @@ from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken
+from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc
 import base64,json
 from passlib.context import CryptContext
+import asyncio
 
 def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
     temp_user = User(username=user.username, email=user.email, password=user.password)
@@ -56,7 +57,6 @@ def deleteController(token: str = Header(None), db: Session = Depends(SessionLoc
     return {"status": "User deleted"}
 
 def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
-    print(user)
     if not user.email or not user.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
     
@@ -71,6 +71,11 @@ def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
     return {"AccessToken": generateAccessToken
     (userDB), "RefreshToken": generateRefreshToken(userDB)}
 
-def refreshController(refreshToken: str = Header(None)):
-    
-    return
+async def refreshController(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
+    if not refreshToken:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing Token')
+
+    result = await refreshTokenFunc(refreshToken)
+    accessToken, refreshedToken = result['accessToken'], result['refreshToken']
+
+    return {"AccessToken": accessToken, "RefreshToken": refreshedToken}
