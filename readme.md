@@ -17,6 +17,8 @@ Clone ``git clone https://github.com/SportInsightHub/SportInsight.git``
 
 Go to the project directory : ``$ cd SportInsight``
 
+If you not find package python3.11: ``sudo add-apt-repository ppa:deadsnakes/ppa`` Then ``sudo apt update``
+
 Install python3.11 and other dependencies: ``apt install -y python3.11-venv python3.11-dev libpq-dev gcc``
 
 Install Virtualenv : ``$ pip install virtualenv``
