@@ -1,5 +1,6 @@
 """
-Création du model User, représentant une table dans la base de données ici indiqué tablename : user
+Fait par Marin
+Création du model User, représentant une table dans la base de données
 """
 from sqlalchemy import Column, Integer, String, DateTime, event
 from sqlalchemy.ext.declarative import declarative_base

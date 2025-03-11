@@ -4,6 +4,8 @@ from models.UserModel import User
 from datetime import datetime, timedelta
 from fastapi import Response, status, Request, HTTPException
 
+Auth = ConfigManager.AUTH()
+
 def tokenPayload(user: User):
     return {
         "uuid": str(user.uuid),
@@ -15,10 +17,10 @@ expiredAccessToken = timedelta(hours=1)
 expiredRefreshToken = timedelta(days=7)
 
 def generateAccessToken(user):
-    return jwt.encode(tokenPayload(user), ConfigManager.AUTH()["ACCESS_TOKEN"], algorithm='HS256')
+    return jwt.encode(tokenPayload(user), Auth["ACCESS_TOKEN"], algorithm='HS256')
 
 def generateRefreshToken(user):
-    return jwt.encode(tokenPayload(user), ConfigManager.AUTH()["REFRESH_TOKEN"], algorithm='HS256')
+    return jwt.encode(tokenPayload(user), Auth["REFRESH_TOKEN"], algorithm='HS256')
 
 def formatJWT(token):
     parts = token.split('.')
@@ -37,7 +39,7 @@ def authenticateToken(authorization, response: Response, request: Request):
         if not formatJWT(token):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
 
-        user = jwt.decode(token, ConfigManager.API_KEY.ACCESS_TOKEN_SECRET, algorithms=['HS256'])
+        user = jwt.decode(token, Auth["ACCESS_TOKEN"], algorithms=['HS256'])
         request.session.auth = request.session.get('auth', {})
         request.session.auth['user'] = user
 
@@ -55,12 +57,24 @@ async def refreshToken(token):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
 
     try:
-        user = jwt.decode(token, ConfigManager.API_KEY.REFRESH_TOKEN_SECRET, algorithms=['HS256'])
+        user = jwt.decode(token, Auth["REFRESH_TOKEN"], algorithms=['HS256'])
         del user['iat']
         del user['exp']
         refreshedToken = generateRefreshToken(user)
         accessToken = generateAccessToken(user)
         return {accessToken, refreshedToken}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
+
+async def getUserWithToken(token):
+    if not formatJWT(token):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
+    
+    try:
+        user = jwt.decode(token, Auth["ACCESS_TOKEN"], algorithms=['HS256'])
+        del user['iat']
+        del user['exp']
+        return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 

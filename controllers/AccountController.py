@@ -4,11 +4,9 @@ from config.ConfigDatabase import SessionLocal
 from models.UserModel import User, UserCreate, UserLogin
 from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc
-import base64,json
+from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc, getUserWithToken
 from passlib.context import CryptContext
+import pprint
 import asyncio
 
 def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
@@ -44,15 +42,14 @@ async def registerController(user: UserCreate, db):
 
     return await createUser(new_user, db)
 
-def deleteController(token: str = Header(None), db: Session = Depends(SessionLocal)):
+async def deleteController(token: str = Header(None), db: Session = Depends(SessionLocal)):
     if not token:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
 
-    user = db.query(User).filter(User.token == token).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Token')
-    
-    db.delete(user)
+    user = await getUserWithToken(token)
+    # pprint.pprint(user)
+    userDB = db.query(User).filter(User == user).first()
+    db.delete(userDB)
     db.commit()
     return {"status": "User deleted"}
 
@@ -68,8 +65,7 @@ def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
     if not pwd_context.verify(user.password, userDB.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Password')
 
-    return {"AccessToken": generateAccessToken
-    (userDB), "RefreshToken": generateRefreshToken(userDB)}
+    return {"AccessToken": generateAccessToken(userDB), "RefreshToken": generateRefreshToken(userDB)}
 
 async def refreshController(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
     if not refreshToken:
