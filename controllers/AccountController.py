@@ -4,7 +4,7 @@ from config.ConfigDatabase import SessionLocal
 from models.UserModel import User, UserCreate, UserLogin
 from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
-from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc, getUserWithToken
+from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc, getUserWithToken, tokenPayload
 from passlib.context import CryptContext
 import pprint
 import asyncio
@@ -42,13 +42,22 @@ async def registerController(user: UserCreate, db):
 
     return await createUser(new_user, db)
 
-async def deleteController(token: str = Header(None), db: Session = Depends(SessionLocal)):
-    if not token:
+async def deleteController(userBody : UserLogin, accessToken: str = Header(None), db: Session = Depends(SessionLocal)):
+    if not accessToken:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
 
-    user = await getUserWithToken(token)
-    # pprint.pprint(user)
-    userDB = db.query(User).filter(User == user).first()
+    user = await getUserWithToken(accessToken)
+    userDB = db.query(User).filter(User.email == user["email"]).first()
+    if not userDB:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - User not found')
+    
+    if not userBody.email == userDB.email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Email')
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    if not pwd_context.verify(userBody.password, userDB.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Password')
+    
     db.delete(userDB)
     db.commit()
     return {"status": "User deleted"}
@@ -65,13 +74,11 @@ def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
     if not pwd_context.verify(user.password, userDB.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Password')
 
-    return {"AccessToken": generateAccessToken(userDB), "RefreshToken": generateRefreshToken(userDB)}
+    return {"AccessToken": generateAccessToken(tokenPayload(userDB)), "RefreshToken": generateRefreshToken(tokenPayload(userDB))}
 
 async def refreshController(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
     if not refreshToken:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing Token')
 
     result = await refreshTokenFunc(refreshToken)
-    accessToken, refreshedToken = result['accessToken'], result['refreshToken']
-
-    return {"AccessToken": accessToken, "RefreshToken": refreshedToken}
+    return {"AccessToken": result[0], "RefreshToken": result[1]}

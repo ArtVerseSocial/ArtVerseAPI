@@ -17,13 +17,13 @@ async def register(user: UserCreate, db: Session = Depends(SessionLocal)):
     return await registerController(user, db)
 
 @AccountRouter.delete("/delete")
-def delete(token: str = Header(None), db: Session = Depends(SessionLocal)):
-    return deleteController(token, db)
+async def delete(user: UserLogin, accessToken: str = Header(None), db: Session = Depends(SessionLocal)):
+    return await deleteController(user, accessToken, db)
 
 @AccountRouter.post("/login")
 def login(user: UserLogin, db: Session = Depends(SessionLocal)):
     return loginController(user, db)
 
 @AccountRouter.post("/refresh")
-def refresh(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
-    return refreshController(refreshToken)
+async def refresh(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
+    return await refreshController(refreshToken)

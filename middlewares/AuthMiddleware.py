@@ -6,7 +6,9 @@ from fastapi import Response, status, Request, HTTPException
 
 Auth = ConfigManager.AUTH()
 
-def tokenPayload(user: User):
+def tokenPayload(user):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - User not found')
     return {
         "uuid": str(user.uuid),
         "username": user.username,
@@ -17,16 +19,18 @@ expiredAccessToken = timedelta(hours=1)
 expiredRefreshToken = timedelta(days=7)
 
 def generateAccessToken(user):
-    return jwt.encode(tokenPayload(user), Auth["ACCESS_TOKEN"], algorithm='HS256')
+    
+    return jwt.encode(user, Auth["ACCESS_TOKEN"], algorithm='HS256')
 
 def generateRefreshToken(user):
-    return jwt.encode(tokenPayload(user), Auth["REFRESH_TOKEN"], algorithm='HS256')
+    return jwt.encode(user, Auth["REFRESH_TOKEN"], algorithm='HS256')
 
 def formatJWT(token):
     parts = token.split('.')
 
     if len(parts) == 3:
         return True
+    return False
 
 
 def authenticateToken(authorization, response: Response, request: Request):
@@ -58,24 +62,21 @@ async def refreshToken(token):
 
     try:
         user = jwt.decode(token, Auth["REFRESH_TOKEN"], algorithms=['HS256'])
-        del user['iat']
-        del user['exp']
         refreshedToken = generateRefreshToken(user)
         accessToken = generateAccessToken(user)
-        return {accessToken, refreshedToken}
+        return [accessToken, refreshedToken]
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
 async def getUserWithToken(token):
     if not formatJWT(token):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
-    
     try:
         user = jwt.decode(token, Auth["ACCESS_TOKEN"], algorithms=['HS256'])
-        del user['iat']
-        del user['exp']
         return user
     except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
 # Export des fonctions
