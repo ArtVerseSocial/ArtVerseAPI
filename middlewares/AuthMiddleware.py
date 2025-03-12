@@ -32,7 +32,6 @@ def formatJWT(token):
         return True
     return False
 
-
 def authenticateToken(authorization, response: Response, request: Request):
     token_prefix, token = authorization.split()
 
@@ -79,5 +78,5 @@ async def getUserWithToken(token):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
-# Export des fonctions
+# Exporte des fonctions
 __all__ = ['authenticateToken', 'generateAccessToken', 'generateRefreshToken', 'refreshToken']

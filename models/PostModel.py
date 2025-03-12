@@ -4,16 +4,12 @@ Création du model pour toutes les tables différentes tel que User, Post, Comme
 """
 from sqlalchemy import Column, Integer, String, DateTime, event, BOOLEAN, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, mapped_column
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
-import uuid, string, secrets
+from pydantic import BaseModel
 from models.UserModel import User
 from pytz import timezone
-import logging
-
-# Réduire le niveau de log de SQLAlchemy
-logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
 # Création d'une classe de base pour les modèles SQLAlchemy
 Base = declarative_base()
@@ -29,12 +25,32 @@ class Post(Base):
     __tablename__ = 'post'
 
     # Définition des colonnes de la table
-    id = mapped_column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne UUID, clé primaire, générée automatiquement
-    user_uuid = mapped_column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
-    img_post = mapped_column(String, nullable=False)  # Colonne Image en String
-    description = mapped_column(String, nullable=False)  # Colonne Description en String
-    created_at = mapped_column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne UUID, clé primaire, générée automatiquement
+    title = Column(String, nullable=False)  # Colonne Title en String
+    user_uuid = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
+    img = Column(String, nullable=False)  # Colonne Image en String (doit être en base64)
+    description = Column(String, nullable=False)  # Colonne Description en String
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
     user = relationship("user", back_populates="post")  # Relation avec la table user
+    comments = relationship("comment", back_populates="post")  # Relation avec la table comment
+    likes = relationship("like", back_populates="post")  # Relation avec la table like
+
+class PostCreate(BaseModel): # Création d'une classe de modèle pour la création d'un post
+    title: str
+    user_uuid: UUID
+    img: str
+    description: str
+    
+
+class PostUpdate(BaseModel): # Création d'une classe de modèle pour la mise à jour d'un post
+    id: int
+    title: str = None
+    user_uuid: UUID = None
+    img: str = None
+    description: str = None
+
+    class Config:
+        arbitrary_types_allowed = True # Permet d'accepter les types arbitraires (ici, UUID)
 
 event.listen(Post, 'before_insert', get_current_time) # Ajoute d'un event listener pour générer une date avant la création d'un nouveau post
 
@@ -43,10 +59,10 @@ class Like(Base):
     __tablename__ = 'like'
 
     # Définition des colonnes de la table
-    id = mapped_column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne ID, clé primaire, générée automatiquement
-    user_id = mapped_column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
-    comment_id = mapped_column(Integer, ForeignKey("comment.id"), nullable=True)  # Colonne Likescom en Integer, clé étrangère référant à la table comment
-    post_id = mapped_column(Integer, ForeignKey("post.id"), nullable=True)  # Colonne Likespost en Integer, clé étrangère référant à la table post
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne ID, clé primaire, générée automatiquement
+    user_id = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
+    comment_id = Column(Integer, ForeignKey("comment.id"), nullable=True)  # Colonne Likescom en Integer, clé étrangère référant à la table comment
+    post_id = Column(Integer, ForeignKey("post.id"), nullable=True)  # Colonne Likespost en Integer, clé étrangère référant à la table post
 
     # Relations
     comment = relationship("comment", back_populates="like")
@@ -61,11 +77,11 @@ class Comment(Base):
     __tablename__ = 'comment'
 
     # Définition des colonnes de la table
-    id = mapped_column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne ID, clé primaire, générée automatiquement
-    user_id = mapped_column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
-    content = mapped_column(String, nullable=False)  # Colonne contenu en String
-    created_at = mapped_column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
-    post_id = mapped_column(Integer, ForeignKey('post.id'), nullable=False)  # Colonne post_id, clé étrangère référant à la table post
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne ID, clé primaire, générée automatiquement
+    user_id = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
+    content = Column(String, nullable=False)  # Colonne contenu en String
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
+    post_id = Column(Integer, ForeignKey('post.id'), nullable=False)  # Colonne post_id, clé étrangère référant à la table post
     # Relations
     user = relationship("user", back_populates="comment")
     post = relationship("post", back_populates="comment")
