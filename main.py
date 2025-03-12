@@ -15,19 +15,13 @@ app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False}) # Initialization
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Création d'un schéma d'authentification
 
 async def verify_token(accessToken: str = Depends(oauth2_scheme)):
+    InvalidToken = HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token", headers={"WWW-Authenticate": "Bearer"})
+    
     if not accessToken: # Si il n'y a pas de token
-        raise HTTPException(    # On retourne une erreur 401
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise InvalidToken # On renvoie une erreur
     user = await getUserWithToken(accessToken) # On récupère l'utilisateur avec le token
     if not user: # Si l'utilisateur n'existe pas
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise InvalidToken
     return user
 
 app.include_router(AccountRouter, prefix="/auth") # Création d'un groupe de route avec comme prefix "auth" donc -> "http://localhost:7676/auth/*"
