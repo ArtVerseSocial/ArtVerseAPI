@@ -5,6 +5,7 @@ Création du model User, représentant une table dans la base de données
 from sqlalchemy import Column, Integer, String, DateTime, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from pydantic import BaseModel
 import uuid, string, secrets
@@ -24,6 +25,10 @@ class User(Base):
     email = Column(String, nullable=False)  # Colonne Email en String
     password = Column(String, nullable=False)  # Colonne Password en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
+    
+    posts = relationship("post", back_populates="user")
+    comments = relationship("comment", back_populates="user")
+    likes = relationship("like", back_populates="user")
     
     @staticmethod
     def get_current_time(arg1, arg2, target):
