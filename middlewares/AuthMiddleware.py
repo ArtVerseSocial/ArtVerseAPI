@@ -2,7 +2,9 @@ import jwt
 from config.ConfigManager import ConfigManager
 from models.UserModel import User
 from datetime import datetime, timedelta
-from fastapi import Response, status, Request, HTTPException, Header
+from fastapi import Response, status, Request, HTTPException, Header, Depends
+from sqlalchemy.orm import Session
+from config.ConfigDatabase import SessionLocal
 
 Auth = ConfigManager.AUTH()
 
@@ -32,8 +34,7 @@ def formatJWT(token):
         return True
     return False
 
-def authenticateToken(request: Request, accessToken: str = Header(None)):
-
+def authenticateToken(request: Request, accessToken: str = Header(None), db: Session = Depends(SessionLocal)):
     if not accessToken:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
@@ -42,12 +43,15 @@ def authenticateToken(request: Request, accessToken: str = Header(None)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
 
         user = jwt.decode(accessToken, Auth["ACCESS_TOKEN"], algorithms=['HS256'])
-        request.session.auth = request.session.get('auth', {})
-        request.session.auth['user'] = user
+        # Vérifie si l'utilisateur existe
+        userDB = db.query(User).filter(User.uuid == user['uuid']).first()
+        if not userDB:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - User not found')
+        request.state.auth = request.state.auth if hasattr(request.state, 'auth') else {}
+        request.state.auth['user'] = user
 
-        if request.session.auth['user']['username'] == 'root':
-            request.session.auth['isRoot'] = True
-        next()
+        if request.state.auth['user']['username'] == 'root' == userDB.username: # Vérifie si l'utilisateur est root
+            request.state.auth['isRoot'] = True
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
     except Exception as e:

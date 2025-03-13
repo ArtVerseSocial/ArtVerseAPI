@@ -42,10 +42,6 @@ class PostUpdate(BaseModel): # Création d'une classe de modèle pour la mise à
     img: str = None
     description: str = None
 
-Post.user = relationship("User", back_populates="posts")
-Post.comments = relationship("Comment", order_by="comment.id", back_populates="post")
-Post.likes = relationship("Like", order_by="like.id", back_populates="post")
-
 event.listen(Post, 'before_insert', get_current_time) # Ajoute d'un event listener pour générer une date avant la création d'un nouveau post
 
 class Like(Base):
@@ -58,9 +54,6 @@ class Like(Base):
     comment_id = Column(Integer, ForeignKey("comment.id"), nullable=True)  # Colonne Likescom en Integer, clé étrangère référant à la table comment
     post_id = Column(Integer, ForeignKey("post.id"), nullable=True)  # Colonne Likespost en Integer, clé étrangère référant à la table post
 
-Like.user = relationship("User", back_populates="likes")
-Like.post = relationship("Post", back_populates="likes")
-Like.comment = relationship("Comment", back_populates="likes")
 
 class Comment(Base):
     # Nom de la table dans la base de données
@@ -72,11 +65,5 @@ class Comment(Base):
     content = Column(String, nullable=False)  # Colonne contenu en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
     post_id = Column(Integer, ForeignKey('post.id'), nullable=False)  # Colonne post_id, clé étrangère référant à la table post
-
-Comment.user = relationship("User", back_populates="comments")
-Comment.post = relationship("Post", back_populates="comments")
-Comment.likes = relationship("Like", order_by=Like.id, back_populates="comment")
-
-Post.comments = relationship('comment', order_by=Comment.id, back_populates='post')  # Ajoute la relation inverse dans la table Post
 
 event.listen(Comment, 'before_insert', get_current_time) # Ajoute d'un event listener pour générer une date avant l'insertion d'un nouveau commentaire

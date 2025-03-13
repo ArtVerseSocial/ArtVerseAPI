@@ -18,7 +18,7 @@ def createPost(request: Request,post: PostCreate, db: Session = Depends(SessionL
         title=post.title,
         img=post.img,
         description=post.description, 
-        user_uuid=request.session.auth['user']['uuid']
+        user_uuid=request.state.auth['user']['uuid']
     )
     db.add(new_post)
     db.commit()

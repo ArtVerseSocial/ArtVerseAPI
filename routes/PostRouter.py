@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
 from models.PostModel import Post, PostCreate, PostUpdate
@@ -14,16 +14,16 @@ async def getArt(db: Session = Depends(SessionLocal)):
     return posts # Retourne la liste des posts
 
 @PostRouter.post("/create") # Création d'une route POST pour créer un nouvel article
-async def postArt(post: PostCreate, db: Session = Depends(SessionLocal)): # Définition de la fonction de la route
+async def postArt(request: Request,post: PostCreate, db: Session = Depends(SessionLocal)): # Définition de la fonction de la route
     if not post.title or not post.img or not post.description:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
     
     try: # Vérification que l'image est bien en base64
-        base64.b64decode(post.img)
+        base64.b64decode(post.img, validate=True)
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - img must be base64 encoded')
     
-    new_post = createPost(post, db) # Création de l'article dans la base de données
+    new_post = createPost(request, post, db) # Création de l'article dans la base de données
     return new_post
 
 @PostRouter.put("/update")
