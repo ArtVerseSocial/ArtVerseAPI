@@ -31,9 +31,9 @@ class Post(Base):
     img = Column(String, nullable=False)  # Colonne Image en String (doit être en base64)
     description = Column(String, nullable=False)  # Colonne Description en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
-    user = relationship("user", back_populates="post")  # Relation avec la table user
-    comments = relationship("comment", back_populates="post")  # Relation avec la table comment
-    likes = relationship("like", back_populates="post")  # Relation avec la table like
+    user = relationship("user", back_populates="post")
+    comments = relationship("comment", back_populates="post")
+    likes = relationship("like", back_populates="post")
 
 class PostCreate(BaseModel): # Création d'une classe de modèle pour la création d'un post
     title: str

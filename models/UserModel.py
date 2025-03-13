@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from pydantic import BaseModel
-import uuid, string, secrets
+import uuid
 from pytz import timezone
 
 # Création d'une classe de base pour les modèles SQLAlchemy

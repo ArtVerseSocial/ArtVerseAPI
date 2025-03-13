@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
 from models.PostModel import Post, PostCreate, PostUpdate
 from middlewares.PostMiddleware import createPost, updatePost
+from middlewares.AuthMiddleware import authenticateToken
 import base64
 
 PostRouter = APIRouter() # Création d'une classe de router pour créer un groupe de routes
@@ -49,3 +50,13 @@ async def deleteArt(postId: int, db: Session = Depends(SessionLocal)):
     db.commit()
     
     return {"status": "Post deleted"}
+
+@PostRouter.post("/{post_id}/like")
+def like_post(post_id: int, token: str = Depends(authenticateToken)):
+    # Logique pour liker un post
+    pass
+
+@PostRouter.post("/{post_id}/comment")
+def comment_post(post_id: int, comment: str, token: str = Depends(authenticateToken)):
+    # Logique pour commenter un post
+    pass

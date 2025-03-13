@@ -1,5 +1,7 @@
 """
+Fait par Léandre
 
+Ce fichier permet de lancer l'API avec le serveur uvicorn.
 """
 from fastapi import FastAPI
 from config.ConfigManager import ConfigManager
@@ -15,7 +17,7 @@ app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False}) # Initialization
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Création d'un schéma d'authentification
 
 app.include_router(AccountRouter, prefix="/auth") # Création d'un groupe de route avec comme prefix "auth" donc -> "http://localhost:7676/auth/*"
-app.include_router(PostRouter, prefix="/post", dependencies=Depends(authenticateToken)) # Création d'un groupe de route avec comme prefix "post" donc -> "http://localhost:7676/post/*", avec une dépendance pour vérifier le token et le compte en même temps
+app.include_router(PostRouter, prefix="/post", dependencies=[Depends(authenticateToken)]) # Création d'un groupe de route avec comme prefix "post" donc -> "http://localhost:7676/post/*", avec une dépendance pour vérifier le token et le compte en même temps
 
 # code pour pouvoir lancer l'api avec le server uvicorn
 if __name__ == "__main__":
