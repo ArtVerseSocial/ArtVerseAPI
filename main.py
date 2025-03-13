@@ -11,8 +11,19 @@ from routes.PostRouter import PostRouter
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from starlette.status import HTTP_401_UNAUTHORIZED
+from datetime import datetime
+from contextlib import asynccontextmanager
 
-app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False}) # Initialization d'une api FastAPI#app.include_router(AccountRouter, prefix="/account") # Création d'un groupe de route avec comme prefix "user" donc -> "http://localhost:7676/user/..."
+startTime = datetime.now() # Récupération de l'heure actuelle
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    execution_time = (datetime.now() - startTime).total_seconds() * 1000
+    print(f"API started in {execution_time:.2f} ms") # Affichage du temps d'exécution de l'API en millisecondes
+    yield
+
+app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False}, lifespan=lifespan) # Initialization d'une api FastAPI#app.include_router(AccountRouter, prefix="/account") # Création d'un groupe de route avec comme prefix "user" donc -> "http://localhost:7676/user/..."
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Création d'un schéma d'authentification
 
@@ -23,3 +34,4 @@ app.include_router(PostRouter, prefix="/post", dependencies=[Depends(authenticat
 if __name__ == "__main__":
     import uvicorn # Importation du serveur uvicorn
     uvicorn.run(app, host=ConfigManager.APP()["IP"], port=ConfigManager.APP()["PORT"], headers=[("Server", "API")]) # Utilisation des variables de l'applications puis le lancement de l'API
+    

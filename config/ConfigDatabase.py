@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config.ConfigManager import ConfigManager
-from models.UserModel import Base as UserBase
-from models.PostModel import Base as PostBase
+from models.UserModel import User as UserModel
+from models.PostModel import Post as PostModel
 
 Config = ConfigManager.DATABASE() # Récupération des variables de la base de donnée
 
@@ -12,8 +13,8 @@ class ConfigDatabase:
         try:
             self.engine = create_engine(url, echo=True) # Connexion à la base de donnée
             print("Success")
-            UserBase.metadata.create_all(bind=self.engine) # Si table non créé, alors la créer
-            PostBase.metadata.create_all(bind=self.engine) # Si table non créé, alors la créer
+            UserModel.metadata.create_all(bind=self.engine) # Si table non créé, alors la créer
+            PostModel.metadata.create_all(bind=self.engine) # Si table non créé, alors la créer
             self.Session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine) # Création d'une session pour pouvoir manipuler la base de donnée
         except Exception as e:
             print(e)
@@ -22,7 +23,6 @@ class ConfigDatabase:
         return self.Session() # Mettre la session en public
 
 # Utilisation de la classe ConfigDatabase pour créer la base de données et la session
-config_db = ConfigDatabase(
-    f'{Config["PROTOCOL"]}://{Config["USER"]}:{Config["PASSWORD"]}@{Config["HOST"]}:{Config["PORT"]}/{Config["NAME"]}')
+config_db = ConfigDatabase(f'{Config["PROTOCOL"]}://{Config["USER"]}:{Config["PASSWORD"]}@{Config["HOST"]}:{Config["PORT"]}/{Config["NAME"]}')
 
 SessionLocal = config_db.get_session # Initialization des variables externes

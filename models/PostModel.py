@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from models.UserModel import User
 from pytz import timezone
 
-# Création d'une classe de base pour les modèles SQLAlchemy
 Base = declarative_base()
 
 @staticmethod
@@ -27,19 +26,15 @@ class Post(Base):
     # Définition des colonnes de la table
     id = Column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne UUID, clé primaire, générée automatiquement
     title = Column(String, nullable=False)  # Colonne Title en String
-    user_uuid = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
+    user_uuid = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_uuid, clé étrangère référant à la table user
     img = Column(String, nullable=False)  # Colonne Image en String (doit être en base64)
     description = Column(String, nullable=False)  # Colonne Description en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
-    user = relationship("user", back_populates="post")
-    comments = relationship("comment", back_populates="post")
-    likes = relationship("like", back_populates="post")
 
 class PostCreate(BaseModel): # Création d'une classe de modèle pour la création d'un post
     title: str
     img: str
     description: str
-    
 
 class PostUpdate(BaseModel): # Création d'une classe de modèle pour la mise à jour d'un post
     id: int
@@ -47,8 +42,9 @@ class PostUpdate(BaseModel): # Création d'une classe de modèle pour la mise à
     img: str = None
     description: str = None
 
-    class Config:
-        arbitrary_types_allowed = True # Permet d'accepter les types arbitraires (ici, UUID)
+Post.user = relationship("User", back_populates="posts")
+Post.comments = relationship("Comment", order_by="comment.id", back_populates="post")
+Post.likes = relationship("Like", order_by="like.id", back_populates="post")
 
 event.listen(Post, 'before_insert', get_current_time) # Ajoute d'un event listener pour générer une date avant la création d'un nouveau post
 
@@ -58,17 +54,13 @@ class Like(Base):
 
     # Définition des colonnes de la table
     id = Column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne ID, clé primaire, générée automatiquement
-    user_id = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
+    user_uuid = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
     comment_id = Column(Integer, ForeignKey("comment.id"), nullable=True)  # Colonne Likescom en Integer, clé étrangère référant à la table comment
     post_id = Column(Integer, ForeignKey("post.id"), nullable=True)  # Colonne Likespost en Integer, clé étrangère référant à la table post
 
-    # Relations
-    comment = relationship("comment", back_populates="like")
-    post = relationship("post", back_populates="like")
-    user = relationship("user", back_populates="like")
-
-# Ajout des relations inverses
-Post.likes = relationship("like", order_by=Like.id, back_populates="post")
+Like.user = relationship("User", back_populates="likes")
+Like.post = relationship("Post", back_populates="likes")
+Like.comment = relationship("Comment", back_populates="likes")
 
 class Comment(Base):
     # Nom de la table dans la base de données
@@ -76,17 +68,14 @@ class Comment(Base):
 
     # Définition des colonnes de la table
     id = Column(Integer, primary_key=True, unique=True, nullable=False)  # Colonne ID, clé primaire, générée automatiquement
-    user_id = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
+    user_uuid = Column(UUID, ForeignKey(User.uuid), nullable=False)  # Colonne user_id, clé étrangère référant à la table user
     content = Column(String, nullable=False)  # Colonne contenu en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
     post_id = Column(Integer, ForeignKey('post.id'), nullable=False)  # Colonne post_id, clé étrangère référant à la table post
-    # Relations
-    user = relationship("user", back_populates="comment")
-    post = relationship("post", back_populates="comment")
 
-class CommentCreate(BaseModel): # Création d'une classe de modèle pour la création d'un commentaire
-    content: str
-    post_id: int
+Comment.user = relationship("User", back_populates="comments")
+Comment.post = relationship("Post", back_populates="comments")
+Comment.likes = relationship("Like", order_by=Like.id, back_populates="comment")
 
 Post.comments = relationship('comment', order_by=Comment.id, back_populates='post')  # Ajoute la relation inverse dans la table Post
 
