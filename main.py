@@ -4,7 +4,7 @@
 from fastapi import FastAPI
 from config.ConfigManager import ConfigManager
 from routes.AccountRouter import AccountRouter
-from middlewares.AuthMiddleware import getUserWithToken
+from middlewares.AuthMiddleware import authenticateToken
 from routes.PostRouter import PostRouter
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -14,18 +14,8 @@ app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False}) # Initialization
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Création d'un schéma d'authentification
 
-async def verify_token(accessToken: str = Depends(oauth2_scheme)):
-    InvalidToken = HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token", headers={"WWW-Authenticate": "Bearer"})
-    
-    if not accessToken: # Si il n'y a pas de token
-        raise InvalidToken # On renvoie une erreur
-    user = await getUserWithToken(accessToken) # On récupère l'utilisateur avec le token
-    if not user: # Si l'utilisateur n'existe pas
-        raise InvalidToken
-    return user
-
 app.include_router(AccountRouter, prefix="/auth") # Création d'un groupe de route avec comme prefix "auth" donc -> "http://localhost:7676/auth/*"
-app.include_router(PostRouter, prefix="/post", dependencies=Depends(verify_token)) # Création d'un groupe de route avec comme prefix "post" donc -> "http://localhost:7676/post/*", avec une dépendance pour vérifier le token et le compte en même temps
+app.include_router(PostRouter, prefix="/post", dependencies=Depends(authenticateToken)) # Création d'un groupe de route avec comme prefix "post" donc -> "http://localhost:7676/post/*", avec une dépendance pour vérifier le token et le compte en même temps
 
 # code pour pouvoir lancer l'api avec le server uvicorn
 if __name__ == "__main__":

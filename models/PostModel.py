@@ -37,7 +37,6 @@ class Post(Base):
 
 class PostCreate(BaseModel): # Création d'une classe de modèle pour la création d'un post
     title: str
-    user_uuid: UUID
     img: str
     description: str
     
@@ -45,7 +44,6 @@ class PostCreate(BaseModel): # Création d'une classe de modèle pour la créati
 class PostUpdate(BaseModel): # Création d'une classe de modèle pour la mise à jour d'un post
     id: int
     title: str = None
-    user_uuid: UUID = None
     img: str = None
     description: str = None
 

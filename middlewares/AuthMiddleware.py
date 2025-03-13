@@ -2,7 +2,7 @@ import jwt
 from config.ConfigManager import ConfigManager
 from models.UserModel import User
 from datetime import datetime, timedelta
-from fastapi import Response, status, Request, HTTPException
+from fastapi import Response, status, Request, HTTPException, Header
 
 Auth = ConfigManager.AUTH()
 
@@ -32,17 +32,16 @@ def formatJWT(token):
         return True
     return False
 
-def authenticateToken(authorization, response: Response, request: Request):
-    token_prefix, token = authorization.split()
+def authenticateToken(request: Request,accessToken: str = Header(None)):
 
-    if not token:
+    if not accessToken:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
     try:
-        if not formatJWT(token):
+        if not formatJWT(accessToken):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Format Bearer token')
 
-        user = jwt.decode(token, Auth["ACCESS_TOKEN"], algorithms=['HS256'])
+        user = jwt.decode(accessToken, Auth["ACCESS_TOKEN"], algorithms=['HS256'])
         request.session.auth = request.session.get('auth', {})
         request.session.auth['user'] = user
 
