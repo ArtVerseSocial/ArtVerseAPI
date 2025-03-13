@@ -3,9 +3,15 @@ from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
 from fastapi import Depends, HTTPException, status, Request
 
-def getAllPost(db: Session = Depends(SessionLocal)):
-    posts = db.query(Post).order_by(Post.created_at).all() # Récupération de tous les articles dans la base de données
-    return posts # Retourne la liste des posts
+def getPost(post_id: int = None,db: Session = Depends(SessionLocal)):
+    if post_id:
+        post = db.query(Post).filter(Post.id == post_id).first()
+        if not post:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')
+        return post
+    else:
+        posts = db.query(Post).order_by(Post.created_at).all()
+        return posts
 
 def createPost(request: Request,post: PostCreate, db: Session = Depends(SessionLocal)):
     new_post = Post( # Création d'un nouvel objet Post avec les paramètres reçus
@@ -22,11 +28,11 @@ def createPost(request: Request,post: PostCreate, db: Session = Depends(SessionL
 
 def updatePost(request: Request, post: PostCreate, db: Session = Depends(SessionLocal)):
     postDB = db.query(Post).filter(Post.id == post.id).first()
-    if request.session.auth['user']['uuid'] != postDB.user_uuid:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - You are not the author of this post')
-    
     if not postDB:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')
+    
+    if request.session.auth['user']['uuid'] != postDB.user_uuid:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - You are not the author of this post')
     
     for key, value in post.__dict__.items():
         if key != "id" and value is not None:
@@ -36,3 +42,19 @@ def updatePost(request: Request, post: PostCreate, db: Session = Depends(Session
     db.refresh(postDB)
     
     return postDB
+
+def deletePost(request: Request, postId: int, db: Session = Depends(SessionLocal)):
+    post = db.query(Post).filter(Post.id == postId).first()
+    
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')
+    
+    if request.session.auth['user']['uuid'] != post.user_uuid:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - You are not the author of this post')
+    
+    db.delete(post)
+    db.commit()
+    
+    return {"status": "Post deleted"}
+
+__all__ = ["getAllPost", "createPost", "updatePost", "deletePost"]

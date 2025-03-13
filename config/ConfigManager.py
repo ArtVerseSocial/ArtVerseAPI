@@ -3,7 +3,7 @@
 class ConfigManager:
     # Variable de configuration de l'application
     APP_IP: str = "127.0.0.1" # Variable: APP_IP
-    APP_PORT: int = 7676
+    APP_PORT: int = 7676 # Variable: APP_PORT
 
     AUTH_ACCESS_TOKEN: str = "lTiekFB9jmvZNmMuwuvDrAbSwp0NUPExUeB1auAO1BCiJJH3T1XtUFkzXZRJQwIO"
     AUTH_REFRESH_TOKEN: str = "GU0wEIULTwsvbb0Q0ooAtEiytDPvwPLlb4dBiDVPGDYMeF4vibMBDIks8tqafkh4"

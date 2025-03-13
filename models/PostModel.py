@@ -84,6 +84,10 @@ class Comment(Base):
     user = relationship("user", back_populates="comment")
     post = relationship("post", back_populates="comment")
 
+class CommentCreate(BaseModel): # Création d'une classe de modèle pour la création d'un commentaire
+    content: str
+    post_id: int
+
 Post.comments = relationship('comment', order_by=Comment.id, back_populates='post')  # Ajoute la relation inverse dans la table Post
 
 event.listen(Comment, 'before_insert', get_current_time) # Ajoute d'un event listener pour générer une date avant l'insertion d'un nouveau commentaire
