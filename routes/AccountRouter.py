@@ -7,8 +7,7 @@ from fastapi import APIRouter, Depends, Header, Query, Response, status
 from models.UserModel import UserCreate, UserLogin
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from controllers.AccountController import loginController, registerController, refreshController, deleteController
-from fastapi import Query
+from controllers.AccountController import loginController, registerController, refreshController, deleteController 
 
 AccountRouter = APIRouter() # Création d'une classe de router pour créer un groupe de routes
 

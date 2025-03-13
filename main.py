@@ -16,10 +16,9 @@ from contextlib import asynccontextmanager
 
 startTime = datetime.now() # Récupération de l'heure actuelle
 
-
-@asynccontextmanager
+@asynccontextmanager # Fonction pour gérer le temps d'exécution de l'API
 async def lifespan(app: FastAPI):
-    execution_time = (datetime.now() - startTime).total_seconds() * 1000
+    execution_time = (datetime.now() - startTime).total_seconds() * 1000 # Calcul du temps d'exécution de l'API en millisecondes
     print(f"API started in {execution_time:.2f} ms") # Affichage du temps d'exécution de l'API en millisecondes
     yield
 
@@ -34,4 +33,3 @@ app.include_router(PostRouter, prefix="/post", dependencies=[Depends(authenticat
 if __name__ == "__main__":
     import uvicorn # Importation du serveur uvicorn
     uvicorn.run(app, host=ConfigManager.APP()["IP"], port=ConfigManager.APP()["PORT"], headers=[("Server", "API")]) # Utilisation des variables de l'applications puis le lancement de l'API
-    
