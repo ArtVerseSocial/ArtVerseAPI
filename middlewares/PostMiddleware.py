@@ -1,4 +1,4 @@
-from models.PostModel import Post, PostCreate
+from models.PostModel import Post, PostCreate, PostUpdate
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
 from fastapi import Depends, HTTPException, status, Request
@@ -26,7 +26,7 @@ def createPost(request: Request,post: PostCreate, db: Session = Depends(SessionL
     
     return new_post
 
-def updatePost(request: Request, post: PostCreate, db: Session = Depends(SessionLocal)):
+def updatePost(request: Request, post: PostUpdate, db: Session = Depends(SessionLocal)):
     postDB = db.query(Post).filter(Post.id == post.id).first()
     if not postDB:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')

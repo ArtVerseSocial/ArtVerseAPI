@@ -74,11 +74,11 @@ def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
     if not pwd_context.verify(user.password, userDB.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Password')
 
-    return {"AccessToken": generateAccessToken(tokenPayload(userDB)), "RefreshToken": generateRefreshToken(tokenPayload(userDB))}
+    return {"accessToken": generateAccessToken(tokenPayload(userDB)), "refreshToken": generateRefreshToken(tokenPayload(userDB))}
 
 async def refreshController(refreshToken: str = Header(None), db: Session = Depends(SessionLocal)):
     if not refreshToken:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing Token')
 
     result = await refreshTokenFunc(refreshToken)
-    return {"AccessToken": result[0], "RefreshToken": result[1]}
+    return {"accessToken": result[0], "refreshToken": result[1]}

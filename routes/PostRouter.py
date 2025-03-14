@@ -29,7 +29,7 @@ async def postArt(request: Request,post: PostCreate, db: Session = Depends(Sessi
 @PostRouter.put("/update")
 async def updateArt(post: PostUpdate, db: Session = Depends(SessionLocal)):
     # Vérification des paramètres
-    if not post.id:
+    if not post.id: # Vérification des paramètres
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
     
     updatePost(post, db)
@@ -37,14 +37,16 @@ async def updateArt(post: PostUpdate, db: Session = Depends(SessionLocal)):
     return {"status": "Post updated"}
 
 @PostRouter.delete("/delete")
-async def deleteArt(postId: int, db: Session = Depends(SessionLocal)):
-    if not postId:
+async def deleteArt(request: Request, postId: int, db: Session = Depends(SessionLocal)):
+    if not postId: # Vérification des paramètres
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
     
     post = db.query(Post).filter(Post.id == postId).first()
     
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')
+    if not post: # Vérification que le post existe
+    
+    if request.session.auth['user']['uuid'] != post.user_uuid: # Vérification que l'utilisateur est bien l'auteur de l'article
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - You are not the author of this post')
     
     db.delete(post)
     db.commit()
