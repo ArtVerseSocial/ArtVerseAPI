@@ -14,6 +14,8 @@ from fastapi.security import OAuth2PasswordBearer
 from starlette.status import HTTP_401_UNAUTHORIZED
 from datetime import datetime
 from contextlib import asynccontextmanager
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 startTime = datetime.now() # Récupération de l'heure actuelle
 
@@ -27,6 +29,16 @@ app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False}, lifespan=lifespa
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Création d'un schéma d'authentification
 app.add_middleware(SessionMiddleware, secret_key=ConfigManager.APP()["SECRET_KEY"]) # Ajout du middleware de session
+#app.add_middleware(HTTPSRedirectMiddleware) # Ajout du middleware pour rediriger HTTP vers HTTPS
+#
+## Ajout du middleware CORS
+#app.add_middleware(
+#    CORSMiddleware,
+#    allow_credentials=True,
+#    allow_methods=["*"],  # Permettre toutes les méthodes HTTP
+#    allow_headers=["*"],  # Permettre tous les headers
+#    allow_origins=["https://*"],  # Permettre uniquement les origines HTTPS A remplacer : (* -> domain.fr)
+#)
 
 app.include_router(AccountRouter, prefix="/auth") # Création d'un groupe de route avec comme prefix "auth" donc -> "http://localhost:7676/auth/*"
 app.include_router(PostRouter, prefix="/post", dependencies=[Depends(authenticateToken)]) # Création d'un groupe de route avec comme prefix "post" donc -> "http://localhost:7676/post/*", avec une dépendance pour vérifier le token et le compte en même temps

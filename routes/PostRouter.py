@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from models.PostModel import Post, PostCreate, PostUpdate, PostLike
+from models.PostModel import Post, PostCreate, PostUpdate, PostLike, CommentCreate, Comment, CommentUpdate
 from middlewares.PostMiddleware import createPost, updatePost, deletePost, getPost
 from middlewares.AuthMiddleware import authenticateToken
 from middlewares.LikeMiddleware import switchLikeToPost
+from middlewares.CommentMiddleware import createComment
 import base64
 
 PostRouter = APIRouter() # Création d'une classe de router pour créer un groupe de routes
@@ -59,7 +60,59 @@ def like_post(request: Request, post_id: int, db: Session = Depends(SessionLocal
     
     return switchLikeToPost(request, post_id, db)
 
+@PostRouter.get("/{post_id}/comment/getAll")
+def getAll(request: Request, post_id: int,db: Session=Depends(SessionLocal)):
+    if not post_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
+
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found - Post not found')
+    
+    comments = db.query(Comment).filter(Comment.post_id == post_id).all()
+    return comments
+
 @PostRouter.post("/{post_id}/comment")
-def comment_post(post_id: int, comment: str, token: str = Depends(authenticateToken)):
-    # Logique pour commenter un post
-    pass
+def comment_post(request: Request, post_id: int, comment: CommentCreate, db: Session = Depends(SessionLocal)):
+    if not post_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
+        
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing comment')
+    
+    existing_comment = db.query(Comment).filter(Comment.post_id == post_id, Comment.user_uuid == request.state.auth["user"]["uuid"]).first()
+    
+    if existing_comment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - User has already commented on this post')
+    comment.post_id = post_id
+    return createComment(request, comment, db)
+
+@PostRouter.put("/{post_id}/comment/update")
+def updateComment(request: Request, post_id: int, comment: CommentUpdate, db: Session = Depends(SessionLocal)):
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found - Post not found')
+
+    user_uuid = request.state.auth["user"]["uuid"]
+    commentDB = db.query(Comment).filter(Comment.post_id == post_id, Comment.user_uuid == user_uuid).first()
+    
+    if commentDB is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found - Comment not found')
+    
+    commentDB.content = comment.content
+    
+    db.commit()
+    db.refresh(commentDB)
+    return commentDB
+
+@PostRouter.delete("/{post_id}/comment/delete")
+def deleteComment(request: Request, post_id: int, db: Session = Depends(SessionLocal)):
+    user_uuid = request.state.auth["user"]["uuid"]
+    comment = db.query(Comment).filter(Comment.post_id == post_id,Comment.user_uuid == user_uuid).first()
+    
+    if comment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found - Comment not found')
+    
+    db.delete(comment)
+    db.commit()
+    return {"detail": "Comment deleted successfully"}

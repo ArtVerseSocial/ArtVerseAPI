@@ -50,11 +50,21 @@ class Comment(Base):
     content = Column(String, nullable=False)  # Colonne contenu en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
     post_id = Column(Integer, ForeignKey('post.id'), nullable=False)  # Colonne post_id, clé étrangère référant à la table post
+    
     like = relationship("CommentLike", backref="comment",cascade="all, delete-orphan")  # Relation avec la table CommentLike
     likes_count = column_property(
         select(func.count("comment_like.id")).filter("comment_like.comment_id" == id).scalar_subquery(),
         deferred=True,
     )
+    
+    __table_args__ = (UniqueConstraint('user_uuid', 'post_id', name='unique_user_content'),)  # Contrainte d'unicité pour éviter les doublons
+
+class CommentCreate(BaseModel):
+    content: str;
+    post_id: int = None;
+
+class CommentUpdate(BaseModel):
+    content: str;
 
 event.listen(Comment, 'before_insert', get_current_time) # Ajoute d'un event listener pour générer une date avant l'insertion d'un nouveau commentaire
 
