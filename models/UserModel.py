@@ -21,7 +21,7 @@ class User(Base):
     # Définition des colonnes de la table
     uuid = Column(UUID, primary_key=True, default=uuid.uuid4, unique=True, nullable=False)  # Colonne UUID, clé primaire, générée automatiquement
     username = Column(String, nullable=False)  # Colonne Name en String
-    email = Column(String, nullable=False)  # Colonne Email en String
+    email = Column(String, nullable=False, unique=True)  # Colonne Email en String
     password = Column(String, nullable=False)  # Colonne Password en String
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # Colonne Created At, avec valeur par défaut définie à l'heure actuelle
     

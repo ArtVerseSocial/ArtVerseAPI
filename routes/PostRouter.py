@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from models.PostModel import Post, PostCreate, PostUpdate
-from middlewares.PostMiddleware import createPost, updatePost
+from models.PostModel import Post, PostCreate, PostUpdate, PostLike
+from middlewares.PostMiddleware import createPost, updatePost, deletePost, getPost
 from middlewares.AuthMiddleware import authenticateToken
+from middlewares.LikeMiddleware import switchLikeToPost
 import base64
 
 PostRouter = APIRouter() # Création d'une classe de router pour créer un groupe de routes
 
 @PostRouter.get("/get") # Création d'une route GET pour récupérer tous les articles
-async def getArt(db: Session = Depends(SessionLocal)):
-    posts = db.query(Post).order_by(Post.created_at).all() # Récupération de tous les articles dans la base de données
+def getArt(post_id: int = None, db: Session = Depends(SessionLocal)):
+    posts = getPost(post_id, db) # Récupération des articles
     return posts # Retourne la liste des posts
 
 @PostRouter.post("/create") # Création d'une route POST pour créer un nouvel article
@@ -27,14 +28,12 @@ async def postArt(request: Request,post: PostCreate, db: Session = Depends(Sessi
     return new_post
 
 @PostRouter.put("/update")
-async def updateArt(post: PostUpdate, db: Session = Depends(SessionLocal)):
+async def updateArt(request: Request, post: PostUpdate = Body(...), db: Session = Depends(SessionLocal)):
     # Vérification des paramètres
     if not post.id: # Vérification des paramètres
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
     
-    updatePost(post, db)
-    
-    return {"status": "Post updated"}
+    return await updatePost(request, post, db)
 
 @PostRouter.delete("/delete")
 async def deleteArt(request: Request, postId: int, db: Session = Depends(SessionLocal)):
@@ -44,19 +43,21 @@ async def deleteArt(request: Request, postId: int, db: Session = Depends(Session
     post = db.query(Post).filter(Post.id == postId).first()
     
     if not post: # Vérification que le post existe
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found - Post not found')
     
-    if request.session.auth['user']['uuid'] != post.user_uuid: # Vérification que l'utilisateur est bien l'auteur de l'article
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - You are not the author of this post')
-    
-    db.delete(post)
-    db.commit()
-    
-    return {"status": "Post deleted"}
+    return await deletePost(request, postId, db)
 
 @PostRouter.post("/{post_id}/like")
-def like_post(post_id: int, token: str = Depends(authenticateToken)):
-    # Logique pour liker un post
-    pass
+def like_post(request: Request, post_id: int, db: Session = Depends(SessionLocal)):
+    if not post_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
+    
+    post = db.query(Post).filter(Post.id == post_id).first()
+    
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found - Post not found')
+    
+    return switchLikeToPost(request, post_id, db)
 
 @PostRouter.post("/{post_id}/comment")
 def comment_post(post_id: int, comment: str, token: str = Depends(authenticateToken)):

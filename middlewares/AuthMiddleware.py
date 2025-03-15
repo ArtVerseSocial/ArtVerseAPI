@@ -52,6 +52,7 @@ def authenticateToken(request: Request, accessToken: str = Header(None), db: Ses
 
         if request.state.auth['user']['username'] == 'root' == userDB.username: # Vérifie si l'utilisateur est root
             request.state.auth['isRoot'] = True
+        return True
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
     except Exception as e:
