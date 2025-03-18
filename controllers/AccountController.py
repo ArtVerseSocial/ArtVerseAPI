@@ -9,8 +9,6 @@ from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
 from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc, getUserWithToken, tokenPayload
 from passlib.context import CryptContext
-import pprint
-import asyncio
 
 def createUser(user: UserCreate, db: Session = Depends(SessionLocal)):
     temp_user = User(username=user.username, email=user.email, password=user.password)
