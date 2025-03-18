@@ -37,7 +37,7 @@ def formatJWT(token):
         return True
     return False
 
-def authenticateToken(request: Request, accessToken: str = Header(None), db: Session = Depends(SessionLocal)):
+def authenticateToken(request: Request, accessToken: str = Header(), db: Session = Depends(SessionLocal)):
     if not accessToken:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Bearer token')
 
