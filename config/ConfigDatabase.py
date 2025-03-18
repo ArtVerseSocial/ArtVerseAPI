@@ -1,3 +1,6 @@
+"""
+Permet de gérer la connexion à la base de donnée
+"""
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker

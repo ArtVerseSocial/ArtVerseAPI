@@ -1,3 +1,6 @@
+"""
+Info: permet de gérer les commentaires
+"""
 from fastapi import Request, Depends
 from sqlalchemy.orm import Session
 from models.PostModel import Comment, CommentCreate, CommentUpdate

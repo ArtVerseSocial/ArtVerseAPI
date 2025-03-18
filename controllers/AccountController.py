@@ -1,3 +1,6 @@
+"""
+Info: Permet de gérer tous les retours des fonctions
+"""
 from fastapi import APIRouter, Depends, Header, Query, Response, status, HTTPException
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal

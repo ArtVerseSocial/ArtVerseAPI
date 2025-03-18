@@ -1,7 +1,7 @@
 """
 Info : Fait un group avec le prefix "/auth" pour les routes de l'authentification
 
-
+Imaginé par Mathis, fait par Léandre
 """
 from fastapi import APIRouter, Depends, Header, Query, Response, status
 from models.UserModel import UserCreate, UserLogin

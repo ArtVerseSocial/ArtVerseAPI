@@ -1,3 +1,8 @@
+
+"""
+Info: Permet de gérer les "j'aimes"
+"""
+
 from fastapi import Request, status, Response, HTTPException, Depends, Query
 from models.PostModel import Post, PostLike, CommentLike, Comment
 from models.UserModel import User

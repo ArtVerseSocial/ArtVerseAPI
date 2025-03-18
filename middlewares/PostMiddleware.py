@@ -1,3 +1,6 @@
+"""
+Info: Permet de gérer les posts
+"""
 from models.PostModel import Post, PostCreate, PostUpdate
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal

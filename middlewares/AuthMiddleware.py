@@ -1,3 +1,6 @@
+"""
+Info: Permet de gérer le système d'authentification
+"""
 import jwt
 from config.ConfigManager import ConfigManager
 from models.UserModel import User

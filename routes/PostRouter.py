@@ -1,3 +1,8 @@
+"""
+Info : Fait un group avec le prefix "/post" pour les routes de post
+
+Imaginé par Mathis et Léandre, fait par Léandre
+"""
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
