@@ -2,7 +2,7 @@
 
 ## Table of contents
 <p align="center">
-    <a href="#installation">Installation</a>
+    <a href="#description">Description</a><br />
     <a href="#installation">Installation</a>
 </p>
 
