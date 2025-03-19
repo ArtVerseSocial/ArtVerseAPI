@@ -39,7 +39,7 @@ Activate the virtual environment (on linux or macOS): ``$ source .venv/bin/activ
 
 Install Dependencies : ``$ (.venv) > pip install -r requirements.txt``
 
-Start Application : ``$ (.venv) > py main.py``
+Start Application : ``$ (.venv) > python3 main.py``
 
 ## Route disponible
 
