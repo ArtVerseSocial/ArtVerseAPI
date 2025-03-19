@@ -4,7 +4,7 @@
 <p align="center">
     <a href="#description">Description</a><br />
     <a href="#installation">Installation</a>
-    <a href="#installation">Route Disponible</a>
+    <a href="#route-disponible">Route Disponible</a>
 </p>
 
 ## Introduction
@@ -45,14 +45,20 @@ Start Application : ``$ (.venv) > py main.py``
 
 #### Swagger Docs:
 
-/auth/login
+/auth/login?email="(email)"&password="(password)"
 
-/auth/refresh?refreshToken=&
+/auth/refresh
 
-/auth/new?username=
+/auth/new
 
-/art/post?&id_art=&img=buffer&content=
+/art/post
 
-/art/delete?id_art=
+/art/delete
 
-/art/edit?&id_art=&(replace)
+/art/edit
+
+```
+Plus d'informations concernant la documention : <ip_de_l_api>/docs
+
+Lorsque celle-ci est démarré
+```
