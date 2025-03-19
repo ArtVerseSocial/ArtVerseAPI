@@ -4,6 +4,7 @@
 <p align="center">
     <a href="#description">Description</a><br />
     <a href="#installation">Installation</a>
+    <a href="#installation">Route Disponible</a>
 </p>
 
 ## Introduction
@@ -40,7 +41,7 @@ Install Dependencies : ``$ (.venv) > pip install -r requirements.txt``
 
 Start Application : ``$ (.venv) > py main.py``
 
-## Usage
+## Route disponible
 
 #### Swagger Docs:
 
