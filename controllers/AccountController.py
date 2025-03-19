@@ -4,7 +4,7 @@ Info: Permet de gérer tous les retours des fonctions
 from fastapi import APIRouter, Depends, Header, Query, Response, status, HTTPException
 from sqlalchemy.orm import Session
 from config.ConfigDatabase import SessionLocal
-from models.UserModel import User, UserCreate, UserLogin
+from models.UserModel import User, UserCreate, UserDelete
 from pydantic import BaseModel
 from email_validator import validate_email, EmailNotValidError
 from middlewares.AuthMiddleware import generateAccessToken, generateRefreshToken, refreshToken as refreshTokenFunc, getUserWithToken, tokenPayload
@@ -43,7 +43,7 @@ async def registerController(user: UserCreate, db):
 
     return await createUser(new_user, db)
 
-async def deleteController(userBody : UserLogin, accessToken: str = Header(None), db: Session = Depends(SessionLocal)):
+async def deleteController(userBody : UserDelete, accessToken: str = Header(None), db: Session = Depends(SessionLocal)):
     if not accessToken:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
 
@@ -63,16 +63,16 @@ async def deleteController(userBody : UserLogin, accessToken: str = Header(None)
     db.commit()
     return {"status": "User deleted"}
 
-def loginController(user: UserLogin, db: Session = Depends(SessionLocal)):
-    if not user.email or not user.password:
+def loginController(email: str, password: str, db: Session = Depends(SessionLocal)):
+    if not email or not password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad Request - Missing parameters')
     
-    userDB = db.query(User).filter(User.email == user.email).first()
+    userDB = db.query(User).filter(User.email == email).first()
     if not userDB:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized - Invalid Email')
     
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    if not pwd_context.verify(user.password, userDB.password):
+    if not pwd_context.verify(password, userDB.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers='Unauthorized - Invalid Password')
 
     return {"accessToken": generateAccessToken(tokenPayload(userDB)), "refreshToken": generateRefreshToken(tokenPayload(userDB))}
