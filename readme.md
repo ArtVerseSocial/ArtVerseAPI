@@ -3,9 +3,15 @@
 ## Table of contents
 <p align="center">
     <a href="#installation">Installation</a>
+    <a href="#installation">Installation</a>
 </p>
 
 ## Introduction
+
+## Description 
+
+C'est une rest API (coté serveur), inspiré de pinterest, pour le concours trophée NSI, le but étant de répondre au besoin de partager son art, dessin et avoir des retours utilisateurs, pouvoir liker, commenter etc...
+Et tout cela open source où chacun est libre de faire le client pour cette API, c'est en quelque sorte aussi un défi pour les débutants qui souhaite s'entrainer sur les api et les clients qui y font des requêtes !
 
 ## Installation
 
@@ -49,7 +55,3 @@ Start Application : ``$ (.venv) > py main.py``
 /art/delete?id_art=
 
 /art/edit?&id_art=&(replace)
-
-## Contributing
-
-## License
